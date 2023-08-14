@@ -368,6 +368,7 @@ repo_head_frame.grid(row=cur_row,sticky='w')
 repo_head_button = ttk.Checkbutton(repo_head_frame, text='use',variable=use_head, onvalue=1, offvalue=0, command=use_latest_head)
 repo_head_button.pack(side=LEFT,padx='92 0'); 
 repo_head_drop = ttk.OptionMenu(repo_head_frame, repo_head_str, *repo_head_options )
+repo_head_drop.config(width=3)
 repo_head_drop.pack(side=LEFT);
 ttk.Label(repo_head_frame,text="head0 latest release instead").pack(side=LEFT)
 cur_row+=1
@@ -468,6 +469,7 @@ profile_label = ttk.Label(profile_frame, text="I want to...")
 profile_label.pack(side=LEFT)
 profile_str.set("reproduce fsdb");
 profile_drop = ttk.OptionMenu(profile_frame, profile_str, *profile_options, command=profile_select )
+profile_drop.config(width=17)
 profile_drop.pack(side=LEFT);
 cur_row+=1
 
@@ -477,6 +479,7 @@ simbuild_frame.grid(row=cur_row, sticky=W)
 simbuild_button = ttk.Checkbutton(simbuild_frame, text='build the dut first ',variable=simbuild_enable, onvalue=1, offvalue=0, command=enabling_simbuild)
 simbuild_button.pack(side=LEFT) 
 simbuild_stage_drop = ttk.OptionMenu( simbuild_frame, simbuild_stage_str, *simbuild_stage_options )
+simbuild_stage_drop.config(width=15)
 simbuild_stage_drop.pack(side=LEFT)
 simbuild_stage_drop['state']="disabled";
 cur_row+=1
@@ -517,6 +520,7 @@ cov_where_label = ttk.Label(cov_frame, text="save coverage result to")
 cov_where_label.grid(column=0, row=1, sticky=W)
 cov_where_str.set("sandbox area only");
 cov_where_drop = ttk.OptionMenu( cov_frame, cov_where_str, *cov_where_options )
+cov_where_drop.config(width=17)
 cov_where_drop.grid(column=1, row=1,sticky=W);
 cov_where_drop["state"] = "disabled"
 cov_where_label["state"] = "disabled"
@@ -528,6 +532,7 @@ verbosity_label = ttk.Label(verbosity_frame, text="verbosity:")
 verbosity_label.pack(side=LEFT)
 verbosity_str.set("MEDIUM");
 verbosity_drop = ttk.OptionMenu( verbosity_frame, verbosity_str, *verbosity_options )
+verbosity_drop.config(width=7)
 verbosity_drop.pack(side=LEFT)
 cur_row+=1
 #cov_local_button = ttk.Checkbutton(setting_frame, text='save coverage vdb locally toAresult directory',variable=cov_local, onvalue=1, offvalue=0, command=disabling_coverage)
