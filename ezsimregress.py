@@ -27,6 +27,8 @@ def run_simregress(*args):
   
   if(len(dut_str.get()) > 0):
     simregress_input = simregress_input + " -dut "+dut_str.get() + ' '
+  if(len(tmax_str.get()) > 0):
+    simregress_input = simregress_input + " -tmax "+ tmax_str.get() + ' '
   if(notify_enable.get()==1) :
     simregress_input += " -notify "
   if(len(result_dir_str.get()) > 0):
@@ -69,7 +71,7 @@ def run_simregress(*args):
   trex_input+= trex_str.get();
   trex_input+= ' '
 
-  cmd = 'simregress -l '+ list_str.get() + ' -net -P sc4_normal -Q /core/atom/val/powerv -C \'SLES12&&16G\' '+ simregress_input  + ' -trex -ms -vcs +ARGS_IGNORE_UNDEFINED=1 ' + vcs_input  +' -vcs- -ms- '+ trex_input +' -trex- -no_use_ifeed_subdir -no_xs'
+  cmd = 'simregress -l '+ list_str.get() + ' -net -P sc4_normal -Q '+queue_str.get()+' -C \'SLES12&&'+ memory_str.get()+'\' '+ simregress_input  + ' -trex -ms -vcs +ARGS_IGNORE_UNDEFINED=1 ' + vcs_input  +' -vcs- -ms- '+ trex_input +' -trex- -no_use_ifeed_subdir -no_xs'
 
   if(simbuild_enable.get()==1):
     if(simbuild_stage_str.get() == "from scratch"):
@@ -85,11 +87,11 @@ def run_simregress(*args):
     if(repo_head_str.get() == "dkt"):
       latest_head_str = "$RTLMODELS/dkt/bus/bus-ertl-dkt-head0-latest";
     
-    cmd ="set REPO_REALPATH=`realpath " + latest_head_str + "`;setenv MODEL_NAME `basename $REPO_REALPATH`;echo 'model we are using is';echo $MODEL_NAME;setenv REPO_ROOT $REPO_REALPATH ;source /p/hdk/rtl/hdk.rc -cfg atmhdk;setenv REPO_ROOT $REPO_REALPATH;source $REPO_ROOT/cpu/perllib/setup.rc;"  + cmd 
+    cmd ="set REPO_REALPATH=`realpath " + latest_head_str + "`;setenv REPO_NAME `basename $REPO_REALPATH`;echo 'repo we are using is';echo $REPO_NAME;setenv REPO_ROOT $REPO_REALPATH ;source /p/hdk/rtl/hdk.rc -cfg atmhdk;setenv REPO_ROOT $REPO_REALPATH;source $REPO_ROOT/cpu/perllib/setup.rc;"  + cmd 
   #os.system(cmd)
   print('\n');
   print("Thread: start")
-  print(cmd);
+  print("generated script:\n" + cmd +"\n\nbegin executing!");
   #p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  bufsize=1)
   p = subprocess.Popen([cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  bufsize=1, shell=True, executable='/bin/csh')
   run_button['state']='disabled'
@@ -108,33 +110,29 @@ recur_running_str = '';
 def run_scheduler(*args):
   global recur_running
   global recur_running_str
-  if(recur_str.get() == "once" ):
-     print('running regression')
-     #run_simregress();
-  else:
-    next_run_delay =0;
-    if(recur_str.get() == "daily"):
-      next_run_delay = 24; #every 24 hours
-    elif(recur_str.get() == "weekly"):
-      next_run_delay = 24*7;
-    next_run_remaining =0;
-    cur_sec = 1;
-    while(recur_running):
-      if(cur_sec==1):#check at first second of every hour
-        cur_sec=60*60;
-        if(next_run_remaining == 0):
-          print('running recurring regression')
-          run_simregress();
-          next_run_remaining= next_run_delay
-        
-        if(next_run_remaining >24 ):
-          print("running test " +recur_running_str+" ; next run in "+ str(int(next_run_remaining/24))  +" days and " + str(next_run_remaining%24) + " hour(s)" );
-        else:
-          print("running test " +recur_running_str+" ; next run in " + str(next_run_remaining) + " hour(s)" );
-        next_run_remaining-=1;
+  next_run_delay =0;
+  if(recur_str.get() == "daily"):
+    next_run_delay = 24; #every 24 hours
+  elif(recur_str.get() == "weekly"):
+    next_run_delay = 24*7;
+  next_run_remaining =0;
+  cur_sec = 1;
+  while(recur_running):
+    if(cur_sec==1):#check at first second of every hour
+      cur_sec=60*60;
+      if(next_run_remaining == 0):
+        print('running recurring regression')
+        run_simregress();
+        next_run_remaining= next_run_delay
+      
+      if(next_run_remaining >24 ):
+        print("running test " +recur_running_str+" ; next run in "+ str(int(next_run_remaining/24))  +" days and " + str(next_run_remaining%24) + " hour(s)" );
+      else:
+        print("running test " +recur_running_str+" ; next run in " + str(next_run_remaining) + " hour(s)" );
+      next_run_remaining-=1;
 
-      time.sleep(1)
-      cur_sec-=1;
+    time.sleep(1)
+    cur_sec-=1;
 
 def run():
     global recur_running;
@@ -379,8 +377,13 @@ result_dir_entry = ttk.Entry(result_dir_frame,width=50, textvariable=result_dir_
 result_dir_entry.pack(side=LEFT)
 cur_row+=1
 
-setting_frame = ttk.Frame(mainframe,borderwidth=2,relief=RAISED,padding=3);
-setting_frame.grid(column=0, row=1, stick='we');
+setting_wrapper_frame = ttk.Frame(mainframe);
+setting_wrapper_frame.grid(row=1, stick='we');
+setting_wrapper_frame.grid_columnconfigure(0, weight=12)
+setting_wrapper_frame.grid_columnconfigure(1, weight=10)
+
+setting_frame = ttk.Frame(setting_wrapper_frame,borderwidth=2,relief=RAISED,padding=3);
+setting_frame.grid(column=0, row=0, stick='we');
 cur_row=0;
 
 profile_frame = ttk.Frame(setting_frame)
@@ -471,9 +474,6 @@ skip_run_button.grid( row=cur_row, sticky=W);
 cur_row+=1
 
 
-
-
-
 notify_enable.set(1);
 notify_button = ttk.Checkbutton(setting_frame, text='email me when done',variable=notify_enable, onvalue=1, offvalue=0)
 notify_button.grid( row=cur_row, sticky=W); 
@@ -505,6 +505,36 @@ ttk.Label(arg_frame, text="simregress: ").grid(row=4,column=0,sticky=W)
 simregress_str = StringVar()
 simregress_entry = ttk.Entry(arg_frame, width=arg_width, textvariable=simregress_str)
 simregress_entry.grid(row=4,column=1,sticky=W)
+
+setting2_row =0 
+setting2_frame = ttk.Frame(setting_wrapper_frame,borderwidth=2,relief=RAISED,padding=3);
+setting2_frame.grid(column=1, row=0, sticky='wesn');
+ttk.Label(setting2_frame, text="netbatch setting:").grid(column=0,row=0, sticky='we',pady=2);
+
+queue_frame = ttk.Frame(setting2_frame)
+queue_frame.grid(row=1, sticky='we')
+ttk.Label(queue_frame, text="queue: ").pack(side=LEFT)
+queue_str = StringVar()
+queue_str.set("/core/atom/val/powerv")
+queue_entry = ttk.Entry(queue_frame, width=20, textvariable=queue_str)
+queue_entry.pack(side=LEFT)
+
+memory_frame = ttk.Frame(setting2_frame)
+memory_frame.grid(row=2, sticky=W)
+ttk.Label(memory_frame, text="memory: ").pack(side=LEFT)
+memory_str = StringVar()
+memory_str.set("16G")
+memory_entry = ttk.Entry(memory_frame, width=4, textvariable=memory_str)
+memory_entry.pack(side=LEFT)
+
+tmax_frame = ttk.Frame(setting2_frame)
+tmax_frame.grid(row=3, sticky=W)
+ttk.Label(tmax_frame, text="max total jobs: ").pack(side=LEFT)
+tmax_str = StringVar()
+tmax_str.set("1000")
+tmax_entry = ttk.Entry(tmax_frame, width=5, textvariable=tmax_str)
+tmax_entry.pack(side=LEFT)
+
 
 run_button = ttk.Button(mainframe, text='RUN',command=run)
 #run_button = ttk.Button(mainframe, text='RUN',command=run)
