@@ -1,4 +1,16 @@
 #! /usr/intel/bin/python 
+
+
+###################################################
+#                EZSIMREGRESS
+#
+#  An intuitive, standalone gui for simregress
+#
+# Weilin Cao 
+# contact: weilin.cao@intel.com
+#
+####################################################
+
 import os
 import time     
 import subprocess
