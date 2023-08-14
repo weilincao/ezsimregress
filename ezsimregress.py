@@ -434,7 +434,7 @@ tid_button.pack(side=LEFT);
 #tid_label= ttk.Label(tid_frame, text="TID lists:")
 #tid_label.pack(side=LEFT)
 tid_str = StringVar()
-tid_entry = ttk.Entry(tid_frame, width=45, textvariable=tid_str)
+tid_entry = ttk.Entry(tid_frame, width=56, textvariable=tid_str)
 tid_entry.pack(side=LEFT)
 #tid_label["state"]="disabled"
 tid_entry["state"]="disabled"
