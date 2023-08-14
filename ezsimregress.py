@@ -16,6 +16,8 @@ import threading
 
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
+
 
 
 def run_simregress(*args):
@@ -152,6 +154,13 @@ def run():
     
 
     #threading.Thread(target=run_simregress).start()
+def on_closing():
+  global recur_running
+  if(recur_running):
+    if messagebox.askokcancel("Quit", "There is a a recurring test running on backgroud\nDo you want to quit for sure?"):
+      root.destroy()
+  else:
+    root.destroy()
 
 def test():
     print("Thread: start")
@@ -170,6 +179,14 @@ def hello(*args):
 
 
 from tkinter import filedialog
+
+def use_latest_head(*args):
+  if(use_head.get() == 1):
+    repo_dir_label['state']='disable'
+  else:
+    repo_dir_label['state']='normal'
+
+
 def browse_list(*args):
   filename = filedialog.askopenfilename(initialdir = os.getcwd(),
                                           title = "Select a File",
@@ -319,17 +336,23 @@ repo_dir_frame = ttk.Frame(repo_frame,borderwidth=1,relief=RIDGE,padding=2 )
 repo_dir_frame.pack(side=LEFT)
 repo_display = '';
 if repo_root is None:
-  repo_display = " not yet specified, either select the head repo or close this window"
-elif len(repo_root)>50:
-  begin_index=len(repo_root)-50
+  repo_display = " not yet specified, either select the latest repo below or close this window"
+elif len(repo_root)>75:
+  begin_index=len(repo_root)-75
   repo_display = repo_root[begin_index:]
   repo_display = "..." + repo_display + "  "
-ttk.Label(repo_dir_frame, text=repo_display).pack(side=LEFT)
-repo_head_button = ttk.Checkbutton(repo_frame, text='use',variable=use_head, onvalue=1, offvalue=0)
-repo_head_button.pack(side=LEFT); 
-repo_head_drop = ttk.OptionMenu(repo_frame, repo_head_str, *repo_head_options )
+repo_dir_label = ttk.Label(repo_dir_frame, text=repo_display)
+repo_dir_label.pack(side=LEFT)
+
+cur_row+=1;
+
+repo_head_frame = ttk.Frame(basic_frame,padding='0 2 0 0')
+repo_head_frame.grid(row=cur_row,sticky='w')
+repo_head_button = ttk.Checkbutton(repo_head_frame, text='use',variable=use_head, onvalue=1, offvalue=0, command=use_latest_head)
+repo_head_button.pack(side=LEFT,padx='92 0'); 
+repo_head_drop = ttk.OptionMenu(repo_head_frame, repo_head_str, *repo_head_options )
 repo_head_drop.pack(side=LEFT);
-ttk.Label(repo_frame,text="head0").pack(side=LEFT)
+ttk.Label(repo_head_frame,text="head0 latest release instead").pack(side=LEFT)
 cur_row+=1
 
 dut_frame = ttk.Frame(basic_frame,padding= '0 5 5 0')
@@ -346,7 +369,7 @@ ttk.Label(list_frame, text="list: ").pack(side=LEFT)
 list_str = StringVar()
 browse_list_button = ttk.Button(list_frame, text='browse',command=browse_list)
 browse_list_button.pack(side=LEFT)
-list_entry = ttk.Entry(list_frame, width=60, textvariable=list_str)
+list_entry = ttk.Entry(list_frame, width=70, textvariable=list_str)
 list_entry.pack(side=LEFT)
 cur_row+=1
 
@@ -373,7 +396,7 @@ browse_result_dir_button = ttk.Button(result_dir_frame, text='browse',command=br
 browse_result_dir_button.pack(side=LEFT)
 
 result_dir_str = StringVar()
-result_dir_entry = ttk.Entry(result_dir_frame,width=50, textvariable=result_dir_str)
+result_dir_entry = ttk.Entry(result_dir_frame,width=60, textvariable=result_dir_str)
 result_dir_entry.pack(side=LEFT)
 cur_row+=1
 
@@ -479,7 +502,7 @@ notify_button = ttk.Checkbutton(setting_frame, text='email me when done',variabl
 notify_button.grid( row=cur_row, sticky=W); 
 cur_row+=1
 
-arg_width  = 65
+arg_width  = 75
 arg_frame = ttk.Frame(mainframe,borderwidth=2,relief=RAISED,padding=3)
 arg_frame.grid(row=2,sticky="ew") 
 
@@ -576,7 +599,7 @@ sys.stdout = RedirectText(text)
 profile_select();
 
 #root.bind("<Return>", run_simregress)
-
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 
 #print('ezsimregress done')
