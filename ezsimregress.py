@@ -103,7 +103,7 @@ def run_simregress(*args):
   print("generated script:\n" + cmd +"\n\nbegin executing!");
   p = subprocess.Popen([cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  bufsize=1, shell=True, executable='/bin/csh')
   run_button['state']='disabled'
-  while p.poll() is None:
+  while p.poll() is None: 
     msg = p.stdout.readline().strip() # read a line from the process output
     if msg:
   #    #print(msg)
@@ -147,10 +147,10 @@ def run():
     global recur_running;
     global recur_running_str
     if(recur_str.get()  == 'once'):
-      threading.Thread(target=run_simregress).start()
+      threading.Thread(target=run_simregress, daemon=True).start()
     else:
       if(not recur_running):  
-        thread = threading.Thread(target=run_scheduler)
+        thread = threading.Thread(target=run_scheduler, daemon=True)
         thread.start()
         recur_running =True;
         recur_running_str = recur_str.get()
