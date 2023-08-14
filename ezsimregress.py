@@ -3,6 +3,7 @@ import os
 import time     
 import subprocess
 import threading
+from pathlib import Path
 
 #cmd = 'setenv PYTHON_TEST SUCCESS'
 #cmd = 'echo $MR'
@@ -27,9 +28,14 @@ def run_simregress(*args):
   simregress_input ='';
   fuse_input = '';
   simbuild_input = '';
-  print('hello') 
-  if(len(dut_str.get()) > 0):
-    simregress_input = simregress_input + " -dut "+dut_str.get() + ' '
+  final_dut_str = '';
+  if(dut_drop_str.get() != dut_level0_list[0]):
+      simregress_input = simregress_input + " -dut "+dut_drop_str.get() + ' '
+      final_dut_str = dut_drop_str.get() 
+  else:
+    if(len(dut_str.get()) > 0):
+      simregress_input = simregress_input + " -dut "+dut_str.get() + ' '
+      final_dut_str = dut_str.get() 
   if(len(tmax_str.get()) > 0):
     simregress_input = simregress_input + " -tmax "+ tmax_str.get() + ' '
   if(notify_enable.get()==1) :
@@ -78,9 +84,9 @@ def run_simregress(*args):
 
   if(simbuild_enable.get()==1):
     if(simbuild_stage_str.get() == "from scratch"):
-      cmd = "simbuild -dut "+ dut_str.get() +  " && " + cmd
+      cmd = "simbuild -dut "+ final_dut_str +  " && " + cmd
     if(simbuild_stage_str.get() == "from cth_vcs stage"):
-      cmd = "simbuild -dut "+ dut_str.get() +  " -start cth_vcs  && " +cmd
+      cmd = "simbuild -dut "+ final_dut_str +  " -start cth_vcs  && " +cmd
   
   if(use_head.get()==1):
     if(repo_head_str.get() == "skt"):
@@ -95,7 +101,6 @@ def run_simregress(*args):
   print('\n');
   print("Thread: start")
   print("generated script:\n" + cmd +"\n\nbegin executing!");
-  #p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  bufsize=1)
   p = subprocess.Popen([cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  bufsize=1, shell=True, executable='/bin/csh')
   run_button['state']='disabled'
   while p.poll() is None:
@@ -199,6 +204,18 @@ def browse_list(*args):
                                                        ("all files",
                                                         "*.*")))
   list_str.set(filename);
+
+def choose_dut(*args):
+  if(dut_drop_str.get() != dut_level0_list[0] ):
+    #dut_str.set(dut_drop_str.get())
+    dut_str.set('')
+    dut_entry['state']='disabled'
+  else:
+    dut_str.set('')
+    dut_entry['state']='normal'
+
+
+    
 
 def browse_result_dir(*args):
   filename = filedialog.askdirectory()
@@ -320,8 +337,6 @@ recur_options = ["","once", "daily", "weekly"];
 dump_fsdb = IntVar()
 notify_enable = IntVar()
 
-
-
 mainframe = ttk.Frame(root, padding=3)
 mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
 
@@ -357,12 +372,48 @@ repo_head_drop.pack(side=LEFT);
 ttk.Label(repo_head_frame,text="head0 latest release instead").pack(side=LEFT)
 cur_row+=1
 
+perlscript = """
+use strict;
+use vars qw(%TaskConfig);
+
+chdir "$ENV{'RTLMODELS'}/dkt/bus/bus-ertl-dkt-head0-latest";
+my $c ="bus";
+my $s ="dkt-head0";
+my $e ="default";
+require "$ENV{'RTLMODELS'}/dkt/bus/bus-ertl-dkt-head0-latest/config/TaskConfig.common.pm";
+require "$ENV{'RTLMODELS'}/dkt/bus/bus-ertl-dkt-head0-latest/config/TaskConfig.hdk.${s}.${c}.pl";
+my @duts = @{$TaskConfig{'duts'}{$c}{$s}};
+my @stages = @{$TaskConfig{'stages'}};
+foreach my $dut (@duts) {
+	foreach my $stage (@stages) {
+	if (defined $TaskConfig{$c}{$s}{$dut}{$stage}{$e} and $stage eq 'level0') {
+		print "$dut ";
+	}
+  }
+}
+print "\n";
+"""
+dut_level0_list = subprocess.check_output(['perl', '-e', perlscript], shell=False).decode().split()
+dut_level0_list.insert(0, 'select below');
+
 dut_frame = ttk.Frame(basic_frame,padding= '0 5 5 0')
 dut_frame.grid(row=cur_row, sticky=W)
-ttk.Label(dut_frame, text="dut: ").pack(side=LEFT)
+ttk.Label(dut_frame, text="dut:").pack(side=LEFT)
+
+dut_drop_str = StringVar()
+dut_drop = ttk.OptionMenu(dut_frame, dut_drop_str,dut_level0_list[0], *dut_level0_list, command = choose_dut)
+dut_drop.config(width=20)
+dut_drop.pack(side=LEFT,padx="2 0")
+
+ttk.Label(dut_frame, text="  or specify here: ").pack(side=LEFT, )
+
 dut_str = StringVar()
-dut_entry = ttk.Entry(dut_frame, width=20, textvariable=dut_str)
+dut_entry = ttk.Entry(dut_frame, width=25, textvariable=dut_str)
 dut_entry.pack(side=LEFT)
+
+
+
+
 cur_row+=1
 
 list_frame = ttk.Frame(basic_frame)
