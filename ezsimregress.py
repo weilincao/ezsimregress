@@ -24,7 +24,7 @@ def run_simregress(*args):
   simregress_input ='';
   fuse_input = '';
   simbuild_input = '';
-  
+  print('hello') 
   if(len(dut_str.get()) > 0):
     simregress_input = simregress_input + " -dut "+dut_str.get() + ' '
   if(len(tmax_str.get()) > 0):
@@ -138,7 +138,7 @@ def run():
     global recur_running;
     global recur_running_str
     if(recur_str.get()  == 'once'):
-      run_simregress();
+      threading.Thread(target=run_simregress).start()
     else:
       if(not recur_running):  
         thread = threading.Thread(target=run_scheduler)
@@ -293,7 +293,7 @@ verbosity_str =StringVar();
 verbosity_options = ["","LOW", "MEDIUM","HIGH","FULL","DEBUG" ];
 
 profile_str =StringVar();
-profile_options = ["","run regression", "reproduce fsdb"];
+profile_options = ["choose an options","run regression", "reproduce fsdb"];
 
 recur_str =StringVar();
 recur_options = ["","once", "daily", "weekly"];
