@@ -18,9 +18,10 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 
-
-
+simregress_running = False;
 def run_simregress(*args):
+  global simregress_running;
+  simregress_running =True
   trex_input = '';
   vcs_input = '';
   simregress_input ='';
@@ -105,6 +106,7 @@ def run_simregress(*args):
       text.see('end')
   run_button['state']='normal';
   print("Thread: end")
+  simregress_running=False
 
 
 recur_running = False;
@@ -156,8 +158,8 @@ def run():
     #threading.Thread(target=run_simregress).start()
 def on_closing():
   global recur_running
-  if(recur_running):
-    if messagebox.askokcancel("Quit", "There is a a recurring test running on backgroud\nDo you want to quit for sure?"):
+  if(recur_running or simregress_running):
+    if messagebox.askokcancel("Quit", "There is a test running\nDo you want to quit for sure?"):
       root.destroy()
   else:
     root.destroy()
