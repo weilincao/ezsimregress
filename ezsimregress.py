@@ -73,7 +73,7 @@ def run_simregress(*args):
   vcs_input += plusarg_str.get();
   vcs_input += ' '
 
-  if(save_enable.get()==1) :
+  if(save_enable.get()==0) :
     trex_input += " -save "
 
   if(cov_enable.get()==1):
@@ -158,6 +158,7 @@ def run_scheduler(*args):
 def run():
     global recur_running;
     global recur_running_str
+    global scheduler_thread
     if(recur_str.get()  == 'once'):
       threading.Thread(target=run_simregress, daemon=True).start()
     else:
@@ -370,6 +371,8 @@ elif len(repo_root)>75:
   begin_index=len(repo_root)-75
   repo_display = repo_root[begin_index:]
   repo_display = "..." + repo_display + "  "
+else:
+  repo_display = repo_root
 repo_dir_label = ttk.Label(repo_dir_frame, text=repo_display)
 repo_dir_label.pack(side=LEFT)
 
@@ -624,7 +627,7 @@ tmax_frame = ttk.Frame(setting2_frame)
 tmax_frame.grid(row=3, sticky=W)
 ttk.Label(tmax_frame, text="max total jobs: ").pack(side=LEFT)
 tmax_str = StringVar()
-tmax_str.set("1000")
+tmax_str.set("500")
 tmax_entry = ttk.Entry(tmax_frame, width=5, textvariable=tmax_str)
 tmax_entry.pack(side=LEFT)
 
