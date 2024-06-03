@@ -38,6 +38,7 @@ def run_simregress(*args):
   trex_input = '';
   vcs_input = '';
   simregress_input ='';
+  env_input = '';
   fuse_input = '';
   simbuild_input = '';
   final_dut_str = '';
@@ -68,7 +69,7 @@ def run_simregress(*args):
       vcs_input = vcs_input + " +FSDB_ON="+fsdb_begin_str.get()+ " "
     if(len(fsdb_end_str.get()) > 0):
       vcs_input = vcs_input + " +FSDB_OFF="+fsdb_end_str.get()+ " " 
-  vcs_input = vcs_input + " +OVM_VERBOSITY=OVM_"+verbosity_str.get()+ " UVM_VERBOSITY=UVM_"+verbosity_str.get() 
+  vcs_input = vcs_input + " +OVM_VERBOSITY=OVM_"+verbosity_str.get()+ " +UVM_VERBOSITY=UVM_"+verbosity_str.get() 
   vcs_input += ' '
   vcs_input += plusarg_str.get();
   vcs_input += ' '
@@ -77,11 +78,12 @@ def run_simregress(*args):
     trex_input += " -save "
 
   if(cov_enable.get()==1):
+    vcs_input += " +ATOM_COVERAGE_ENABLE=1 "
     if(cov_where_str.get() == "both"):
       trex_input += " -casa_args -local -casa_args- "
     if(cov_where_str.get() == "sandbox area only"):
       trex_input += " -casa_args -casa_args- "
-    if(cov_where_str.get() == "local result directory only"):
+    if(cov_where_str.get() == "local result dir only"):
       trex_input += " -casa_args -local_only -casa_args- "
   
   if(skip_run.get()==1) :
@@ -91,8 +93,11 @@ def run_simregress(*args):
   trex_input+= ' ' 
   trex_input+= trex_str.get();
   trex_input+= ' '
+  
+  if "SIMREGRESS_ARG_BASE" in os.environ:
+    env_input = os.getenv("SIMREGRESS_ARG_BASE") 
 
-  cmd = 'simregress -l '+ list_str.get() + ' -net -P sc4_normal -Q '+queue_str.get()+' -C \'SLES12&&'+ memory_str.get()+'\' '+ simregress_input  + ' -trex -ms -vcs +ARGS_IGNORE_UNDEFINED=1 ' + vcs_input  +' -vcs- -ms- '+ trex_input +' -trex- -no_use_ifeed_subdir -no_xs'
+  cmd = 'simregress -l '+ list_str.get() + ' -net -P sc4_normal -Q '+queue_str.get()+' -C \'SLES12&&'+ memory_str.get()+'\' '+ env_input + ' ' + simregress_input  + ' -trex -ms -vcs +ARGS_IGNORE_UNDEFINED=1 ' + vcs_input  +' -vcs- -ms- '+ trex_input +' '+fuse_input+ ' -trex- -no_use_ifeed_subdir -no_xs'
 
   if(simbuild_enable.get()==1):
     if(simbuild_stage_str.get() == "from scratch"):
@@ -106,8 +111,10 @@ def run_simregress(*args):
     if(repo_head_str.get() == "sk8"):
       latest_head_str = "$RTLMODELS/skt/cpu/cpu-ertl-sk8-head0-latest";
     if(repo_head_str.get() == "dkt"):
-      latest_head_str = "$RTLMODELS/dkt/bus/bus-ertl-dkt-head0-latest";
-    
+      latest_head_str = "$RTLMODELS/dkt/cpu/cpu-ertl-dkt-head0-latest";
+    if(repo_head_str.get() == "arw"):
+      latest_head_str = "$RTLMODELS/arw/bus/bus-ertl-arw-head0-latest";
+
     cmd ="set REPO_REALPATH=`realpath " + latest_head_str + "`;setenv REPO_NAME `basename $REPO_REALPATH`;echo 'repo we are using is';echo $REPO_NAME;setenv REPO_ROOT $REPO_REALPATH ;source /p/hdk/rtl/hdk.rc -cfg atmhdk;setenv REPO_ROOT $REPO_REALPATH;source $REPO_ROOT/cpu/perllib/setup.rc;"  + cmd 
   #os.system(cmd)
   print('\n');
@@ -321,8 +328,8 @@ else:
   root.title("EZsimregress" )
 
 repo_head_str = StringVar();
-repo_head_str.set("dkt");
-repo_head_options = ["", "dkt", "sk8","skt"];
+repo_head_str.set("arw");
+repo_head_options = ["","arw" , "dkt", "sk8","skt"];
 
 simbuild_stage_str = StringVar()
 simbuild_stage_str.set("from scratch");
