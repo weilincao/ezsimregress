@@ -225,6 +225,18 @@ def browse_list(*args):
                                                         "*.*")))
   list_str.set(filename);
 
+
+def preview_list(*args):
+  if(os.path.isfile(list_str.get())):
+    # Create secondary (or popup) window.
+    child_w= Toplevel(root)
+    child_w.geometry("750x250")
+    child_w.title("Preview");
+    preview_txt = Text(child_w, wrap=WORD, width=750, height= 250)
+    preview_txt.pack(pady=10)
+    with open(list_str.get(), 'r') as f:
+      preview_txt.insert(INSERT, f.read())
+
 def choose_dut(*args):
   if(dut_drop_str.get() != dut_level0_list[0] ):
     #dut_str.set(dut_drop_str.get())
@@ -445,8 +457,10 @@ ttk.Label(list_frame, text="list: ").pack(side=LEFT)
 list_str = StringVar()
 browse_list_button = ttk.Button(list_frame, text='browse',command=browse_list)
 browse_list_button.pack(side=LEFT)
-list_entry = ttk.Entry(list_frame, width=70, textvariable=list_str)
+list_entry = ttk.Entry(list_frame, width=60, textvariable=list_str)
 list_entry.pack(side=LEFT)
+preview_button = ttk.Button(list_frame, text='preview',command=preview_list);
+preview_button.pack(side=RIGHT)
 cur_row+=1
 
 
