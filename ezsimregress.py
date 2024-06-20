@@ -101,7 +101,7 @@ def run_simregress(*args):
 
   if(simbuild_enable.get()==1):
     if(simbuild_stage_str.get() == "from scratch"):
-      cmd = "simbuild -dut "+ final_dut_str +  " && " + cmd
+      cmd = "simbuild -dut "+ final_dut_str +  " -sched nbfeeder -no_local && " + cmd
     if(simbuild_stage_str.get() == "from cth_vcs stage"):
       cmd = "simbuild -dut "+ final_dut_str +  " -start cth_vcs  && " +cmd
   
